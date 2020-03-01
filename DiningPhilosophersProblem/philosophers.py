@@ -1,51 +1,68 @@
-import threading, time, random
+import threading, time, random, curses
 
 
 class Philosopher(threading.Thread):
 
     alive = True
 
-    def __init__(self, my_name, fork_on_the_left, fork_on_the_right):
+    def __init__(self, my_number, fork_on_the_left, fork_on_the_right, screen):
 
         threading.Thread.__init__(self)
 
-        self.my_name = my_name
+        self.my_name = 'P'+str(my_number)
         self.fork_on_the_left = fork_on_the_left
         self.fork_on_the_right = fork_on_the_right
+
+        self.left_fork_number = my_number
+        self.right_fork_number = (my_number+1)%5
+
+        self.screen_x_position = my_number*20
+
+        self.win = curses.newwin(10, 20, 10, self.screen_x_position)
+        self.win.immedok(True)
+
+        self.win_fork = curses.newwin(10, 20, 20, self.screen_x_position)
+        self.win_fork.immedok(True)
 
     def run(self):
         
         while(self.alive):
 
             #thinking..    
-            print(self.my_name + 'is thinking..')
-            time.sleep(random.uniform(1,3))
+            self.win.erase()
+            self.win.addstr(self.my_name + ' is thinking..')
+
+            time.sleep(random.uniform(3,6))
 
             #hungry..
-            print(self.my_name + 'is hungry :(')
+            self.win.erase()
+            self.win.addstr(self.my_name + ' is hungry :(')
+
 
             while(self.alive):
-                
-                if self.fork_on_the_left.acquire(False):
+                                    
+                self.fork_on_the_left.acquire(True)
+
+                if self.fork_on_the_right.acquire(False):
+
+                    #eating..
+                    self.win.erase()
+                    self.win.addstr(self.my_name + ' is eating :)')
                     
-                    self.fork_on_the_left.acquire()
+                    self.win_fork.erase()
+                    self.win_fork.addstr(self.my_name+' using fork '+str(self.left_fork_number) + ' '+str(self.right_fork_number))
 
-                    if self.fork_on_the_right.acquire(False):
+                    time.sleep(random.uniform(3,6))
 
-                        self.fork_on_the_right.acquire()
+                    self.fork_on_the_left.release()
+                    self.fork_on_the_right.release()
 
-                        #eating..
-                        print(self.my_name + 'is eating :)')
-                        time.sleep(random.uniform(1,3))
-                        self.fork_on_the_left.release()
-                        self.fork_on_the_right.release()
-                        break
+                    self.win_fork.erase()
+                    break
 
-                    else:
-                        self.fork_on_the_left.release()
-                        continue    
                 else:
-                    continue
+                    self.fork_on_the_left.release()
+                    continue 
 
         
 
