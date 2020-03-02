@@ -2,10 +2,13 @@ import threading
 import philosophers
 import time
 import curses
+import random
 
 visualization = curses.initscr()
 
 visualization.immedok(True)
+
+curses.curs_set(0)
 
 def DiningPhilosophersProblem():
     
@@ -24,6 +27,7 @@ def DiningPhilosophersProblem():
         i.alive = False
 
 
+random.seed()
 
 DiningPhilosophersProblem()
 

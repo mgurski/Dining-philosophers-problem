@@ -16,12 +16,12 @@ class Philosopher(threading.Thread):
         self.left_fork_number = my_number
         self.right_fork_number = (my_number+1)%5
 
-        self.screen_x_position = my_number*20
+        self.screen_x_position = my_number*30
 
-        self.win = curses.newwin(10, 20, 10, self.screen_x_position)
+        self.win = curses.newwin(10, 30, 10, self.screen_x_position)
         self.win.immedok(True)
 
-        self.win_fork = curses.newwin(10, 20, 20, self.screen_x_position)
+        self.win_fork = curses.newwin(10, 30, 20, self.screen_x_position)
         self.win_fork.immedok(True)
 
     def run(self):
@@ -29,10 +29,11 @@ class Philosopher(threading.Thread):
         while(self.alive):
 
             #thinking..    
-            self.win.erase()
-            self.win.addstr(self.my_name + ' is thinking..')
+            for i in range(5):
+                self.win.erase()
+                self.win.addstr(self.my_name + ' is thinking'+'.'*i)
 
-            time.sleep(random.uniform(3,6))
+                time.sleep(random.uniform(0.7,1.0))
 
             #hungry..
             self.win.erase()
@@ -41,28 +42,34 @@ class Philosopher(threading.Thread):
 
             while(self.alive):
                                     
-                self.fork_on_the_left.acquire(True)
+                if self.fork_on_the_left.acquire(True, 5):
 
-                if self.fork_on_the_right.acquire(False):
+                    if self.fork_on_the_right.acquire(False):
 
-                    #eating..
-                    self.win.erase()
-                    self.win.addstr(self.my_name + ' is eating :)')
+                        #eating..
                     
-                    self.win_fork.erase()
-                    self.win_fork.addstr(self.my_name+' using fork '+str(self.left_fork_number) + ' '+str(self.right_fork_number))
+                        for i in range(5):
 
-                    time.sleep(random.uniform(3,6))
+                            self.win.erase()
+                            self.win.addstr(self.my_name + ' is eating :)'+'.'*i)
+                    
+                            self.win_fork.erase()
+                            self.win_fork.addstr(self.my_name+' using fork '+str(self.left_fork_number) + ' '+str(self.right_fork_number))
 
-                    self.fork_on_the_left.release()
-                    self.fork_on_the_right.release()
+                            time.sleep(random.uniform(0.7,1.0))
 
-                    self.win_fork.erase()
-                    break
+                        self.fork_on_the_left.release()
+                        self.fork_on_the_right.release()
 
+                        self.win_fork.erase()
+                        break
+
+                    else:
+                        self.fork_on_the_left.release()
+                        continue 
                 else:
-                    self.fork_on_the_left.release()
-                    continue 
+                    time.sleep(0.5)
+                    continue
 
         
 
